@@ -1,7 +1,9 @@
 const express = require("express");
 const { connectToMongoDb } = require("./connect");
+let ejs = require('ejs');
 const urlRoute = require("./routes/url");
 const URL = require("./models/url");
+const path=require('path')
 const app = express();
 
 const PORT = 8002;
@@ -9,13 +11,19 @@ const PORT = 8002;
 connectToMongoDb("mongodb://127.0.0.1:27017/shortUrl").then(() => {
   console.log("MongoDB connected!");
 
+
+  app.set("view engine","ejs")
+  app.set("views",path.resolve("./views"))
   // Start the server after the MongoDB connection is established
   app.use(express.json());
   app.use("/url", urlRoute);
 
-
-app.use('/test',(req,res)=>{
-    return res.end("<h1>Hello from server</h1>")
+// sending html
+app.use('/test',async(req,res)=>{
+    const allUrls=await URL.find({});
+    return res.render("home",{
+        urls:allUrls,
+    })
 })
   app.get("/:shortId", async (req, res) => {
     try {
